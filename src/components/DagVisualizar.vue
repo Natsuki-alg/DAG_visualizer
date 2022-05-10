@@ -5,7 +5,7 @@
         <div class="card-header">Input Form</div>
         <div class="card-body">
           <div class="row">
-            <label class="col-sm-2 col-form-label">DAG name</label>
+            <label class="col-sm-2 col-form-label">Node name</label>
             <div class="col-sm-10">
               <input v-model="name" class="form-control" />
               <div class="invalid-feedback" style="display: block">
@@ -23,7 +23,7 @@
               type="checkbox"
               :id="d.id"
               :value="d.id"
-              v-model="checkDag"
+              v-model="checkedNodes"
             />
             <label class="form-check-label" :for="d.id" :name="d.name">{{
               d.name
@@ -83,7 +83,7 @@ export default {
       pathData: [],
       nodeData: [],
       dag: [],
-      checkDag: [],
+      checkedNodes: [],
       name: "",
       msg: "",
     };
@@ -93,7 +93,7 @@ export default {
       this.pathData = [];
       this.nodeData = [];
       this.dag = [];
-      this.checkDag = [];
+      this.checkedNodes = [];
       this.name = "";
       this.msg = "";
     },
@@ -107,12 +107,12 @@ export default {
       const obj = {
         id: this.dag.length + 1,
         name: this.name,
-        parents: this.checkDag,
+        parents: new Set(this.checkedNodes),
         timestamp: new Date(),
       };
       this.dag.push(obj);
-      // this.name = "";
-      this.checkDag = [];
+      this.name = "";
+      this.checkedNodes = [];
 
       this.drawing();
     },
@@ -251,13 +251,13 @@ function splitter(dag) {
   // DAGをEDGEに分解する
   dag.forEach((element) => {
     // 親NODEを持たないものは端点として登録
-    if (element.parents.length == 0) {
+    if (element.parents.size === 0) {
       edges.push({
         startNodeID: element.id,
       });
     }
     // 親ID配列をNODEの登録日時順でソートする
-    const parents = element.parents.sort((id1, id2) => {
+    const parents = [...element.parents].sort((id1, id2) => {
       return nodes.get(id1) - nodes.get(id2);
     });
     // 親ID配列を走るループで自IDを始点、親IDを終点として登録
@@ -388,9 +388,9 @@ function dagChecker(dag) {
     if (toString.call(element.id) !== '[object String]') {
       return false;
     }
-    if (toString.call(element.parents) !== '[object Array]') {
-      return false;
-    }
+    // if (toString.call(element.parents) !== '[object Array]') {
+    //   return false;
+    // }
     if (toString.call(element.timestamp) !== '[object Date]') {
       return false;
     }
