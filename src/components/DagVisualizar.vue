@@ -110,11 +110,30 @@ export default {
         parents: new Set(this.checkedNodes),
         timestamp: new Date(),
       };
+
+      // TODO testObj create
+      const testObj = {
+        name: obj.name,
+        parents: this.checkedNodes,
+        timestamp: obj.timestamp,
+      };
+
       this.dag.push(obj);
       this.name = "";
       this.checkedNodes = [];
 
       this.drawing();
+
+      // TODO server request test
+      const uri = "/dag";
+      this.axios
+        .post(uri, testObj)
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
     drawing: function () {
       const drawingData = convertToDrawingData(this.dag);
@@ -243,7 +262,7 @@ function splitter(dag) {
   dag.sort((e, f) => {
     return e.timestamp.valueOf() > f.timestamp.valueOf() ? -1 : 1;
   });
-  
+
   // NODEのIDと順序の対応表
   dag.forEach((element, index) => {
     nodes.set(element.id, index);
@@ -309,7 +328,7 @@ function convertToDrawingData(dag) {
   if (!dagChecker(dag)) {
     return;
   }
-  
+
   for (let edge of spDag.edges) {
     const startNodeID = edge.startNodeID;
     const startY = spDag.nodes.get(startNodeID);
@@ -372,11 +391,11 @@ function convertToDrawingData(dag) {
 }
 
 function dagChecker(dag) {
-  if (toString.call(dag) !== '[object Array]') {
+  if (toString.call(dag) !== "[object Array]") {
     return false;
   }
-  dag.forEach(element => {
-    if (toString.call(element) !== '[object Object]') {
+  dag.forEach((element) => {
+    if (toString.call(element) !== "[object Object]") {
       return false;
     }
     // if (!(element.hasOwnProperty('id')
@@ -385,27 +404,30 @@ function dagChecker(dag) {
     // ) {
     //   return false;
     // }
-    if (toString.call(element.id) !== '[object String]') {
+    if (toString.call(element.id) !== "[object String]") {
       return false;
     }
     // if (toString.call(element.parents) !== '[object Array]') {
     //   return false;
     // }
-    if (toString.call(element.timestamp) !== '[object Date]') {
+    if (toString.call(element.timestamp) !== "[object Date]") {
       return false;
     }
   });
-  dag.forEach(node => {
-    if (dag.filter(subNode => node.id === subNode.id).length > 1) {
+  dag.forEach((node) => {
+    if (dag.filter((subNode) => node.id === subNode.id).length > 1) {
       return false;
     }
   });
-  dag.forEach(node => {
-    node.parents.forEach(parentID => {
-      if (!dag.some(subNode => subNode.id === parentID)) {
+  dag.forEach((node) => {
+    node.parents.forEach((parentID) => {
+      if (!dag.some((subNode) => subNode.id === parentID)) {
         return false;
       }
-      if (dag.find(subNode => subNode.id === parentID).timestamp.valueOf() > node.timestamp.valueOf()) {
+      if (
+        dag.find((subNode) => subNode.id === parentID).timestamp.valueOf() >
+        node.timestamp.valueOf()
+      ) {
         return false;
       }
     });
